@@ -11,6 +11,7 @@ function civicrm_navblock_block_info() {
     'info' => t('CiviCRM Menu'),
     'status' => TRUE,
     'region' => 'content',
+    'cache' => BLOCK_NO_CACHE,
   );
   return $blocks;
 }
@@ -26,28 +27,13 @@ function civicrm_navblock_block_view($delta = '') {
       // Add CiviCRM's basic JS & CSS, cj() is required for the menu.
       CRM_Core_Resources::singleton()->addCoreResources();
 
-      $session = CRM_Core_Session::singleton();
-      $contactID = $session->get('userID');
-
-      if ($contactID) {
-        $navigation = CRM_Core_BAO_Navigation::createNavigation($contactID);
-        $smarty = CRM_Core_Smarty::singleton();
-        $smarty->assign('navigation', $navigation);
-        $content = $smarty->fetch('CRM/common/drupal.tpl');
-        // templates/CRM/common/drupal.tpl
-        // CRM/common/Navigation.tpl
-      }
-
-      // Render page header
-      if ($region = CRM_Core_Region::instance('html-header', FALSE)) {
-        CRM_Utils_System::addHTMLHead($region->render(''));
-      }
+      $smarty = CRM_Core_Smarty::singleton();
+      require_once 'CRM/Core/Smarty/plugins/function.crmNavigationMenu.php';
 
       $block = array(
         'subject' => '',
-        'content' => $content,
+        'content' => smarty_function_crmNavigationMenu(array(), $smarty),
       );
-
       return $block;
       break;
     default:
